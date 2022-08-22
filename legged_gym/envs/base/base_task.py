@@ -97,6 +97,20 @@ class BaseTask():
                 self.viewer, gymapi.KEY_ESCAPE, "QUIT")
             self.gym.subscribe_viewer_keyboard_event(
                 self.viewer, gymapi.KEY_V, "toggle_viewer_sync")
+            self.gym.subscribe_viewer_keyboard_event(
+                self.viewer, gymapi.KEY_B, "toggle_heading_mode")
+            self.gym.subscribe_viewer_keyboard_event(
+                self.viewer, gymapi.KEY_W, "foreward")
+            self.gym.subscribe_viewer_keyboard_event(
+                self.viewer, gymapi.KEY_S, "backward")
+            self.gym.subscribe_viewer_keyboard_event(
+                self.viewer, gymapi.KEY_A, "go_left")
+            self.gym.subscribe_viewer_keyboard_event(
+                self.viewer, gymapi.KEY_D, "go_right")
+            self.gym.subscribe_viewer_keyboard_event(
+                self.viewer, gymapi.KEY_J, "turn_left")
+            self.gym.subscribe_viewer_keyboard_event(
+                self.viewer, gymapi.KEY_K, "turn_right")
 
     def get_observations(self):
         return self.obs_buf
@@ -117,7 +131,7 @@ class BaseTask():
     def step(self, actions):
         raise NotImplementedError
 
-    def render(self, sync_frame_time=True):
+    def control_render(self, sync_frame_time=True):
         if self.viewer:
             # check for window closed
             if self.gym.query_viewer_has_closed(self.viewer):
@@ -129,6 +143,20 @@ class BaseTask():
                     sys.exit()
                 elif evt.action == "toggle_viewer_sync" and evt.value > 0:
                     self.enable_viewer_sync = not self.enable_viewer_sync
+                elif evt.action == "foreward" and evt.value > 0:
+                    self.set_commands(i=0, dirc=1)
+                elif evt.action == "backward" and evt.value > 0:
+                    self.set_commands(i=0, dirc=-1)
+                elif evt.action == "go_left" and evt.value > 0:
+                    self.set_commands(i=1, dirc=1)
+                elif evt.action == "go_right" and evt.value > 0:
+                    self.set_commands(i=1, dirc=-1)
+                elif evt.action == "turn_left" and evt.value > 0:
+                    self.set_commands(i=2+self.heading_command, dirc=1)
+                elif evt.action == "turn_right" and evt.value > 0:
+                    self.set_commands(i=2+self.heading_command, dirc=-1)
+                elif evt.action == "toggle_heading_mode" and evt.value > 0:
+                    self.heading_command = not self.heading_command
 
             # fetch results
             if self.device != 'cpu':
